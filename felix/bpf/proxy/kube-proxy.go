@@ -158,6 +158,8 @@ func (kp *KubeProxy) start() error {
 			hostIPs, ok := <-kp.hostIPUpdates
 			if !ok {
 				defer log.Error("kube-proxy stopped since hostIPUpdates closed")
+				kp.lock.Lock()
+				defer kp.lock.Unlock()
 				kp.proxy.Stop()
 				return
 			}
@@ -167,6 +169,8 @@ func (kp *KubeProxy) start() error {
 			go func() {
 				defer close(stopped)
 				defer log.Info("kube-proxy stopped to restart with updated host IPs")
+				kp.lock.Lock()
+				defer kp.lock.Unlock()
 				kp.proxy.Stop()
 			}()
 
